@@ -1,24 +1,37 @@
 <template>
-	<div class="cell">
+	<div
+		class="cell"
+		:class="{ hidden: !isVisible }"
+		:id="content.row.toString() + '-' + content.col.toString()"
+	>
 		<div :class="valNumToColorClass">
-			{{ content }}
+			{{ content.value }}
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from "vue";
+import { computed } from "vue";
 
 const props = defineProps<Props>();
+
 interface Props {
-	content: number;
+	content: {
+		value: number;
+		visible: boolean;
+		row: number;
+		col: number;
+	};
 }
+const isVisible = computed(() => {
+	return props.content.visible;
+});
 
 // change color (css) depending on content
 const valNumToColorClass = computed(() => {
-	switch (props.content) {
+	switch (props.content.value) {
 		case 0:
-			return "invisible";
+			return "zero";
 		case 1:
 			return "one";
 		case 2:
@@ -43,10 +56,10 @@ const valNumToColorClass = computed(() => {
 });
 </script>
 
-<style></style>
-
 <style scoped>
 .cell {
+	width: 45px;
+	height: 45px;
 	border: 1px solid rgb(143, 143, 143);
 	display: flex;
 	justify-content: center;
@@ -55,31 +68,29 @@ const valNumToColorClass = computed(() => {
 	font-family: "Press Start 2P", cursive;
 	position: relative;
 }
-.hiding {
-	position: absolute;
+
+.hidden {
+	width: 45px;
+	height: 45px;
 	background-color: blueviolet;
 	border: 4px rgb(230, 230, 230) outset;
 }
-
-.cell,
-.hiding {
-	width: 45px;
-	height: 45px;
+.hidden > * {
+	color: transparent !important;
+	background-color: blueviolet !important;
+	border-radius: 0 !important;
+	border: none !important;
+	height: 0;
 }
 @media all and (max-width: 1224px) {
-	.cell,
-	.hiding {
+	.cell {
 		width: 35px;
 		height: 35px;
 		font-size: 22px;
 	}
 }
 
-.displayNone {
-	display: none;
-}
-
-.invisible {
+.zero {
 	color: transparent;
 }
 .one {
@@ -102,11 +113,12 @@ const valNumToColorClass = computed(() => {
 }
 .seven {
 	color: rgb(109, 246, 109);
+	text-shadow: 2px 1px 2px black;
 }
 .eight {
 	color: rgb(236, 240, 36);
+	text-shadow: -2px 1px 2px black;
 }
-
 .bomb {
 	border-radius: 50%;
 	background-color: red;
@@ -120,20 +132,6 @@ const valNumToColorClass = computed(() => {
 	.bomb {
 		width: 22px;
 		height: 22px;
-	}
-}
-
-.imgBombClicked {
-	position: absolute;
-	width: 35px;
-	height: 35px;
-	top: -0.5vw;
-	left: -0.5vw;
-}
-@media all and (max-width: 1224px) {
-	.imgBombClicked {
-		width: 30px;
-		height: 30px;
 	}
 }
 </style>

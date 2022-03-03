@@ -43,20 +43,15 @@
 				</div>
 			</div>
 			<div id="gameGrid">
-				<div class="row" v-for="(row, indexRow) in rows">
-					<Cell
-						v-for="(col, indexCol) in cols"
-						:content="gridContent[indexRow][indexCol]"
-					/>
-				</div>
+				<Grid :rows="rows" :cols="cols" :mines="nbMines" :fill="fill" />
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import Cell from "./components/Cell.vue";
-import { ref, reactive, onBeforeMount, watch } from "vue";
+import Grid from "./components/Grid.vue";
+import { ref, watch } from "vue";
 import Settings from "./components/Settings.vue";
 
 const iconContent = ref(":)");
@@ -64,12 +59,10 @@ const nbMines = ref(10);
 const timerVal = ref(0);
 const rows = ref(9);
 const cols = ref(9);
+const fill = ref(false);
 const showSettings = ref(false);
 const showRules = ref(false);
 const flags = ref(nbMines.value);
-const isStarted = ref(false);
-const show = ref(false);
-const totalGoodCellsDisplayed = ref(0);
 
 const toggleSettings = () => {
 	if (showRules.value) {
@@ -84,33 +77,14 @@ const toggleRules = () => {
 	showRules.value = !showRules.value;
 };
 
-let gridContent = reactive([] as number[][]);
-onBeforeMount(() => {
-	createGrid();
-});
-const createGrid = () => {
-	// first empty grid (usefull if alredy exists)
-	gridContent.splice(0, gridContent.length);
-	// then fill it with 0 to initialize
-	for (let i = 0; i < rows.value; i++) {
-		gridContent.push([]);
-		for (let j = 0; j < cols.value; j++) {
-			gridContent[i].push(0);
-		}
-	}
-};
-
 const updateRows = (nb: number) => {
 	rows.value = nb;
-	createGrid();
 };
 const updateCols = (nb: number) => {
 	cols.value = nb;
-	createGrid();
 };
 const updateNbMines = (nb: number) => {
 	nbMines.value = nb;
-	createGrid();
 };
 
 ////////////   flags   //////////////////////
@@ -123,138 +97,19 @@ watch(
 
 // when click on yellow fellow
 const start = () => {
+	fill.value = false;
 	stopTimer();
-	gridContent.map(
-		(row, rowIndex) => (gridContent[rowIndex] = row.map(() => 0))
-	);
-	iconContent.value = ":)";
-	isStarted.value = true;
-	timerVal.value = 0;
-	flags.value = nbMines.value;
-	totalGoodCellsDisplayed.value = 0;
-	show.value = true;
-	setTimeout(() => {
-		show.value = false;
-		setTimeout(() => {
-			// initialize bombs and timer
-			randomFillBombs();
-			startTimer();
-		}, 150);
-	}, 150);
-};
-
-// function to place bombs
-const randomFillBombs = () => {
-	// random cell (row and col), { nbMines } time
-	for (let i = 0; i < nbMines.value; i++) {
-		const randomRow = Math.floor(Math.random() * rows.value);
-		const randomCol = Math.floor(Math.random() * cols.value);
-		// if a bomb is already there => random once more
-		if (gridContent[randomRow][randomCol] === 10) {
-			i--;
-		}
-		gridContent[randomRow][randomCol] = 10;
-	}
-	calculate();
-};
-
-// function to place numbers near bombs
-const calculate = () => {
-	gridContent.map((row, indexRow) =>
-		row.map((col, indexCol) => {
-			if (gridContent[indexRow][indexCol] === 10) {
-				// row above, from left to right:
-				if (
-					indexRow - 1 !== -1 &&
-					indexCol - 1 !== -1 &&
-					gridContent[indexRow - 1][indexCol - 1] !== 10
-				) {
-					gridContent[indexRow - 1][indexCol - 1] += 1;
-				}
-				if (indexRow - 1 !== -1 && gridContent[indexRow - 1][indexCol] !== 10) {
-					gridContent[indexRow - 1][indexCol] += 1;
-				}
-				if (
-					indexRow - 1 !== -1 &&
-					indexCol + 1 !== cols.value &&
-					gridContent[indexRow - 1][indexCol + 1] !== 10
-				) {
-					gridContent[indexRow - 1][indexCol + 1] += 1;
-				}
-
-				// same row, from left to right:
-				if (indexCol - 1 !== -1 && gridContent[indexRow][indexCol - 1] !== 10) {
-					gridContent[indexRow][indexCol - 1] += 1;
-				}
-				if (
-					indexCol + 1 !== cols.value &&
-					gridContent[indexRow][indexCol + 1] !== 10
-				) {
-					gridContent[indexRow][indexCol + 1] += 1;
-				}
-
-				// row below, from left to right:
-				if (
-					indexRow + 1 !== rows.value &&
-					indexCol - 1 !== -1 &&
-					gridContent[indexRow + 1][indexCol - 1] !== 10
-				) {
-					gridContent[indexRow + 1][indexCol - 1] += 1;
-				}
-				if (
-					indexRow + 1 !== rows.value &&
-					gridContent[indexRow + 1][indexCol] !== 10
-				) {
-					gridContent[indexRow + 1][indexCol] += 1;
-				}
-				if (
-					indexRow + 1 !== rows.value &&
-					indexCol + 1 !== cols.value &&
-					gridContent[indexRow + 1][indexCol + 1] !== 10
-				) {
-					gridContent[indexRow + 1][indexCol + 1] += 1;
-				}
-			}
-		})
-	);
+	setTimeout(() => ((fill.value = true), startTimer()), 150);
 };
 
 /////////////    timer     /////////////////
 let timerId: number;
 const startTimer = () => {
+	timerVal.value = 0;
 	timerId = setInterval(() => timerVal.value++, 1000);
 };
 const stopTimer = () => {
 	clearInterval(timerId);
-};
-
-// increment totalGoodCellsDisplayed at leftClick => when reaches the good number => win
-//   look, icon changes !!!!
-const checkWin = () => {
-	totalGoodCellsDisplayed.value++;
-
-	if (
-		totalGoodCellsDisplayed.value ===
-		rows.value * cols.value - nbMines.value
-	) {
-		iconContent.value = ":D";
-		show.value = true;
-		isStarted.value = false;
-		stopTimer();
-		setTimeout(() => {
-			alert("win !!!!!!!!");
-		}, 150);
-	}
-};
-
-const gameOver = () => {
-	iconContent.value = ":(";
-	show.value = true;
-	isStarted.value = false;
-	stopTimer();
-	setTimeout(() => {
-		alert("game over !");
-	}, 150);
 };
 </script>
 
@@ -266,10 +121,10 @@ const gameOver = () => {
 	text-align: center;
 	background-color: rgb(242, 237, 246);
 	padding-bottom: 10vh;
+	min-height: 100vh;
 }
 
 header {
-	/* background-color: purple; */
 	position: relative;
 	min-height: 10vw;
 	padding: 2vw;
@@ -304,7 +159,6 @@ header {
 
 <style scoped>
 .mainWrapper {
-	/* background-color: yellow; */
 	position: relative;
 	display: flex;
 	justify-content: center;
@@ -337,8 +191,10 @@ header {
 @media all and (max-width: 1224px) {
 	.gameContainer {
 		font-size: 20px;
+		margin: 5vw;
 	}
 }
+
 .gameHeader {
 	border: 0.3vw rgb(230, 230, 230) inset;
 	padding: 1vw;
@@ -346,6 +202,7 @@ header {
 	display: flex;
 	justify-content: space-between;
 }
+
 .gameHeaderItem {
 	font-family: "Press Start 2P", cursive;
 	height: 3.5vw;
@@ -356,6 +213,7 @@ header {
 	align-items: center;
 	padding: 0.3vw;
 }
+
 .icon {
 	transform: rotate(0.25turn);
 	background-color: yellow;
@@ -365,26 +223,8 @@ header {
 .icon:hover {
 	cursor: pointer;
 }
+
 #gameGrid {
 	border: 0.3vw rgb(230, 230, 230) inset;
-}
-.row {
-	display: flex;
-}
-@media all and (max-width: 1224px) {
-	.gameContainer {
-		margin: 5vw;
-	}
-}
-@media all and (max-width: 1224px) {
-	.settings {
-		position: absolute;
-		top: 0;
-		left: 0;
-		text-align: right;
-	}
-	.settings input {
-		margin: 0.5vw 0;
-	}
 }
 </style>

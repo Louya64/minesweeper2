@@ -77,12 +77,11 @@ watch(
 
 // const leftClick = (e: Event) => {
 const leftClick = (cellClicked: GridCell) => {
-	if (!cellClicked.flag) {
+	if (!cellClicked.flag && !cellClicked.visible) {
 		cellClicked.visible = true;
 
-		// if bomb game over
+		// if bomb => game over
 		if (cellClicked.value === 10) {
-			//////////////emit game over
 			cellClicked.loosingBomb = true;
 			gridContent.value.map((row) =>
 				row.map((cell) => {
@@ -152,7 +151,6 @@ const dbClick = (cellClicked: GridCell) => {
 			nbFlags++;
 		}
 	});
-	console.log(nbFlags);
 	if (nbFlags === cellClicked.value) {
 		useGetNeighbours(
 			props.rows,

@@ -3,8 +3,10 @@ import { useGetNeighbours } from "./getNeighbours";
 interface GridCell {
 	value: number;
 	visible: boolean;
+	flag: boolean;
 	row: number;
 	col: number;
+	loosingBomb: boolean;
 }
 
 export function useFillGrid(
@@ -20,7 +22,14 @@ export function useFillGrid(
 
 	// emptying grid before filling it
 	grid.map((row) =>
-		row.map((cell) => ((cell.value = 0), (cell.visible = false)))
+		row.map(
+			(cell) => (
+				(cell.value = 0),
+				(cell.visible = false),
+				(cell.flag = false),
+				(cell.loosingBomb = false)
+			)
+		)
 	);
 
 	// random bombs

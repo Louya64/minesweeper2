@@ -1,12 +1,18 @@
 <template>
-	<div
-		class="cell"
-		:class="{ hidden: !isVisible }"
-		:id="content.row.toString() + '-' + content.col.toString()"
-	>
+	<!-- :class="{ hidden: !isVisible }" -->
+	<div class="cell" :id="content.row.toString() + '-' + content.col.toString()">
 		<div :class="valNumToColorClass">
 			{{ content.value }}
 		</div>
+		<div v-if="!isVisible" class="hidden"></div>
+		<div v-if="hasFlag" class="flag">!</div>
+		<img
+			class="isTheLoosingBomb"
+			width="35"
+			v-if="isTheLoosingBomb"
+			src="../assets/croix.png"
+			alt="dfg"
+		/>
 	</div>
 </template>
 
@@ -21,10 +27,18 @@ interface Props {
 		visible: boolean;
 		row: number;
 		col: number;
+		flag: boolean;
+		loosingBomb: boolean;
 	};
 }
 const isVisible = computed(() => {
 	return props.content.visible;
+});
+const hasFlag = computed(() => {
+	return props.content.flag;
+});
+const isTheLoosingBomb = computed(() => {
+	return props.content.loosingBomb;
 });
 
 // change color (css) depending on content
@@ -70,18 +84,19 @@ const valNumToColorClass = computed(() => {
 }
 
 .hidden {
+	position: absolute;
 	width: 45px;
 	height: 45px;
 	background-color: blueviolet;
 	border: 4px rgb(230, 230, 230) outset;
 }
-.hidden > * {
+/* .hidden > * {
 	color: transparent !important;
 	background-color: blueviolet !important;
 	border-radius: 0 !important;
 	border: none !important;
 	height: 0;
-}
+} */
 @media all and (max-width: 1224px) {
 	.cell {
 		width: 35px;
@@ -97,7 +112,7 @@ const valNumToColorClass = computed(() => {
 	color: rgb(57, 57, 250);
 }
 .two {
-	color: green;
+	color: rgb(59, 167, 59);
 }
 .three {
 	color: rgba(255, 0, 0, 0.746);
@@ -113,11 +128,9 @@ const valNumToColorClass = computed(() => {
 }
 .seven {
 	color: rgb(109, 246, 109);
-	text-shadow: 2px 1px 2px black;
 }
 .eight {
-	color: rgb(236, 240, 36);
-	text-shadow: -2px 1px 2px black;
+	color: rgb(32, 32, 32);
 }
 .bomb {
 	border-radius: 50%;
@@ -133,5 +146,15 @@ const valNumToColorClass = computed(() => {
 		width: 22px;
 		height: 22px;
 	}
+}
+
+.isTheLoosingBomb {
+	position: absolute;
+}
+
+.flag {
+	position: absolute;
+	top: 4px;
+	left: 12px;
 }
 </style>

@@ -43,7 +43,15 @@
 				</div>
 			</div>
 			<div id="gameGrid">
-				<Grid :rows="rows" :cols="cols" :mines="nbMines" :fill="fill" />
+				<Grid
+					@flagUpdate="updateFlagsRemaining"
+					@endGame="endGame"
+					:rows="rows"
+					:cols="cols"
+					:mines="nbMines"
+					:fill="fill"
+					:flags="flags"
+				/>
 			</div>
 		</div>
 	</div>
@@ -86,6 +94,9 @@ const updateCols = (nb: number) => {
 const updateNbMines = (nb: number) => {
 	nbMines.value = nb;
 };
+const updateFlagsRemaining = (nbToAdd: number) => {
+	flags.value += nbToAdd;
+};
 
 ////////////   flags   //////////////////////
 watch(
@@ -98,8 +109,13 @@ watch(
 // when click on yellow fellow
 const start = () => {
 	fill.value = false;
+	flags.value = nbMines.value;
 	stopTimer();
 	setTimeout(() => ((fill.value = true), startTimer()), 150);
+};
+
+const endGame = () => {
+	stopTimer();
 };
 
 /////////////    timer     /////////////////

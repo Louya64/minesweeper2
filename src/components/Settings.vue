@@ -2,15 +2,15 @@
 	<div class="setting">
 		<div class="settingsItem">
 			<label for="width">Changer la hauteur</label>
-			<input type="number" id="width" v-model="rows" />
+			<input min="9" type="number" id="width" v-model="rows" />
 		</div>
 		<div class="settingsItem">
 			<label for="height">Changer la largeur</label>
-			<input type="number" id="height" v-model="cols" />
+			<input min="9" type="number" id="height" v-model="cols" />
 		</div>
 		<div class="settingsItem">
 			<label for="bombs">Changer les bombes</label>
-			<input type="number" id="bombs" v-model="nbMines" />
+			<input min="10" type="number" id="bombs" v-model="nbMines" />
 		</div>
 	</div>
 </template>
@@ -18,15 +18,23 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
+const props = defineProps<Props>();
+
+interface Props {
+	rows: number;
+	cols: number;
+	nbMines: number;
+}
+
 const emit = defineEmits<{
 	(e: "newRows", nb: number): void;
 	(e: "newCols", nb: number): void;
 	(e: "newNbMines", nb: number): void;
 }>();
 
-const rows = ref(9);
-const cols = ref(9);
-const nbMines = ref(10);
+const rows = ref(props.rows);
+const cols = ref(props.cols);
+const nbMines = ref(props.nbMines);
 
 watch(
 	() => rows.value,

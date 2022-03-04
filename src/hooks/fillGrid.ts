@@ -13,7 +13,8 @@ export function useFillGrid(
 	grid: GridCell[][],
 	rows: number,
 	cols: number,
-	mines: number
+	mines: number,
+	cellClicked: GridCell
 ) {
 	if (mines > rows * cols) {
 		alert("il y a plus de bombes que de cases");
@@ -32,14 +33,45 @@ export function useFillGrid(
 		)
 	);
 
+	let cellsWithoutBomb = useGetNeighbours(
+		rows,
+		cols,
+		cellClicked.row,
+		cellClicked.col
+	);
+	cellsWithoutBomb[cellsWithoutBomb.length] = {
+		row: cellClicked.row,
+		col: cellClicked.col,
+	};
+
 	// random bombs
 	for (let i = 0; i < mines; i++) {
-		const randomRow = Math.floor(Math.random() * rows);
-		const randomCol = Math.floor(Math.random() * cols);
-		// if a bomb is already there => random once more
-		if (grid[randomRow][randomCol].value === 10) {
-			i--;
+		let randomRow = Math.floor(Math.random() * rows);
+		let randomCol = Math.floor(Math.random() * cols);
+		let okToPutABomb = false;
+
+		while (!okToPutABomb) {
+			console.log("dans while");
+
+			okToPutABomb = true;
+			cellsWithoutBomb.map((cellPos) => {
+				if (cellPos.row === randomRow && cellPos.col === randomCol) {
+					okToPutABomb = false;
+				}
+			});
+			if (grid[randomRow][randomCol].value === 10) {
+				okToPutABomb = false;
+			}
+			if (!okToPutABomb) {
+				randomRow = Math.floor(Math.random() * rows);
+				randomCol = Math.floor(Math.random() * cols);
+			}
 		}
+
+		// if a bomb is already there => random once more
+		// if (grid[randomRow][randomCol].value === 10) {
+		// 	i--;
+		// }
 		grid[randomRow][randomCol].value = 10;
 	}
 

@@ -23,6 +23,9 @@
 		</div>
 
 		<Settings
+			:rows="rows"
+			:cols="cols"
+			:nbMines="nbMines"
 			@newRows="updateRows"
 			@newCols="updateCols"
 			@newNbMines="updateNbMines"
@@ -49,7 +52,7 @@
 					:rows="rows"
 					:cols="cols"
 					:mines="nbMines"
-					:fill="fill"
+					:startClicked="startClicked"
 					:flags="flags"
 				/>
 			</div>
@@ -59,7 +62,7 @@
 
 <script setup lang="ts">
 import Grid from "./components/Grid.vue";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import Settings from "./components/Settings.vue";
 
 const iconContent = ref(":)");
@@ -67,7 +70,7 @@ const nbMines = ref(10);
 const timerVal = ref(0);
 const rows = ref(9);
 const cols = ref(9);
-const fill = ref(false);
+const startClicked = ref(false);
 const showSettings = ref(false);
 const showRules = ref(false);
 const flags = ref(nbMines.value);
@@ -108,10 +111,10 @@ watch(
 
 // when click on yellow fellow
 const start = () => {
-	fill.value = false;
+	startClicked.value = false;
 	flags.value = nbMines.value;
 	stopTimer();
-	setTimeout(() => ((fill.value = true), startTimer()), 150);
+	setTimeout(() => ((startClicked.value = true), startTimer()), 150);
 };
 
 const endGame = () => {

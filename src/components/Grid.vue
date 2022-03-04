@@ -34,7 +34,7 @@ interface Props {
 	rows: number;
 	cols: number;
 	mines: number;
-	fill: boolean;
+	startClicked: boolean;
 	flags: number;
 }
 interface GridCell {
@@ -46,18 +46,22 @@ interface GridCell {
 	loosingBomb: boolean;
 }
 
+const firstClick = ref(true);
+const okToPlay = ref(true);
 let gridContent = ref(useCreateGrid(props.rows, props.cols));
+
 const totalCellsWithoutMines = computed(
 	() => props.rows * props.cols - props.mines
 );
 let nbCellsClicked = 0;
 
 watch(
-	() => props.fill,
+	() => props.startClicked,
 	(newVal) => {
 		if (newVal) {
-			useFillGrid(gridContent.value, props.rows, props.cols, props.mines);
-			nbCellsClicked = 0;
+			firstClick.value = true;
+			okToPlay.value = true;
+			gridContent.value = useCreateGrid(props.rows, props.cols);
 		}
 	}
 );
@@ -65,19 +69,34 @@ watch(
 watch(
 	() => props.rows,
 	(newVal) => {
+		firstClick.value = true;
+		okToPlay.value = true;
 		gridContent.value = useCreateGrid(newVal, props.cols);
 	}
 );
 watch(
 	() => props.cols,
 	(newVal) => {
+		firstClick.value = true;
+		okToPlay.value = true;
 		gridContent.value = useCreateGrid(props.rows, newVal);
 	}
 );
 
 // const leftClick = (e: Event) => {
 const leftClick = (cellClicked: GridCell) => {
-	if (!cellClicked.flag && !cellClicked.visible) {
+	if (firstClick.value && okToPlay.value) {
+		useFillGrid(
+			gridContent.value,
+			props.rows,
+			props.cols,
+			props.mines,
+			cellClicked
+		);
+		nbCellsClicked = 1;
+		firstClick.value = false;
+	}
+	if (!cellClicked.flag && !cellClicked.visible && okToPlay.value) {
 		cellClicked.visible = true;
 
 		// if bomb => game over
@@ -91,6 +110,7 @@ const leftClick = (cellClicked: GridCell) => {
 				})
 			);
 			emit("endGame");
+			okToPlay.value = false;
 			setTimeout(() => alert("game over"), 150);
 			return;
 		} else {
@@ -122,13 +142,14 @@ const leftClick = (cellClicked: GridCell) => {
 				})
 			);
 			emit("endGame");
+			okToPlay.value = false;
 			setTimeout(() => alert("wiiin"), 150);
 		}
 	}
 };
 
 const rightClick = (cellClicked: GridCell) => {
-	if (!props.flags) {
+	if (!props.flags || cellClicked.visible || !okToPlay.value) {
 		return;
 	}
 	cellClicked.flag = !cellClicked.flag;
@@ -137,7 +158,7 @@ const rightClick = (cellClicked: GridCell) => {
 };
 
 const dbClick = (cellClicked: GridCell) => {
-	if (!cellClicked.visible || cellClicked.flag) {
+	if (!cellClicked.visible || cellClicked.flag || !okToPlay.value) {
 		return;
 	}
 	let nbFlags = 0;

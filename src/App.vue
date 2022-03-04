@@ -48,6 +48,8 @@
 			<div id="gameGrid">
 				<Grid
 					@flagUpdate="updateFlagsRemaining"
+					@stopTimer="stopTimer"
+					@startTimer="startTimer"
 					@endGame="endGame"
 					:rows="rows"
 					:cols="cols"
@@ -113,8 +115,8 @@ watch(
 const start = () => {
 	startClicked.value = false;
 	flags.value = nbMines.value;
-	stopTimer();
-	setTimeout(() => ((startClicked.value = true), startTimer()), 150);
+	stopTimer(true);
+	setTimeout(() => (startClicked.value = true), 150);
 };
 
 const endGame = () => {
@@ -124,10 +126,14 @@ const endGame = () => {
 /////////////    timer     /////////////////
 let timerId: number;
 const startTimer = () => {
-	timerVal.value = 0;
+	resetTimer();
 	timerId = setInterval(() => timerVal.value++, 1000);
 };
-const stopTimer = () => {
+const resetTimer = () => {
+	timerVal.value = 0;
+};
+const stopTimer = (reset = false) => {
+	if (reset) resetTimer();
 	clearInterval(timerId);
 };
 </script>

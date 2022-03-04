@@ -27,7 +27,8 @@ import { useGetNeighbours } from "@/hooks/getNeighbours";
 const props = defineProps<Props>();
 const emit = defineEmits<{
 	(e: "flagUpdate", nbToAdd: number): void;
-	(e: "endGame"): void;
+	(e: "stopTimer", reset?: boolean): void;
+	(e: "startTimer"): void;
 }>();
 
 interface Props {
@@ -72,6 +73,7 @@ watch(
 		firstClick.value = true;
 		okToPlay.value = true;
 		gridContent.value = useCreateGrid(newVal, props.cols);
+		emit("stopTimer", true); // true => reset to 0
 	}
 );
 watch(
@@ -80,6 +82,7 @@ watch(
 		firstClick.value = true;
 		okToPlay.value = true;
 		gridContent.value = useCreateGrid(props.rows, newVal);
+		emit("stopTimer", true); // true => reset to 0
 	}
 );
 
@@ -93,8 +96,9 @@ const leftClick = (cellClicked: GridCell) => {
 			props.mines,
 			cellClicked
 		);
-		nbCellsClicked = 1;
+		nbCellsClicked = 0;
 		firstClick.value = false;
+		emit("startTimer");
 	}
 	if (!cellClicked.flag && !cellClicked.visible && okToPlay.value) {
 		cellClicked.visible = true;
@@ -109,7 +113,7 @@ const leftClick = (cellClicked: GridCell) => {
 					}
 				})
 			);
-			emit("endGame");
+			emit("stopTimer");
 			okToPlay.value = false;
 			setTimeout(() => alert("game over"), 150);
 			return;
@@ -132,6 +136,8 @@ const leftClick = (cellClicked: GridCell) => {
 			});
 		}
 
+		console.log(nbCellsClicked);
+
 		// check win
 		if (nbCellsClicked === totalCellsWithoutMines.value) {
 			gridContent.value.map((row) =>
@@ -141,7 +147,7 @@ const leftClick = (cellClicked: GridCell) => {
 					}
 				})
 			);
-			emit("endGame");
+			emit("stopTimer");
 			okToPlay.value = false;
 			setTimeout(() => alert("wiiin"), 150);
 		}
@@ -149,8 +155,11 @@ const leftClick = (cellClicked: GridCell) => {
 };
 
 const rightClick = (cellClicked: GridCell) => {
-	if (!props.flags || cellClicked.visible || !okToPlay.value) {
+	if (cellClicked.visible || !okToPlay.value) {
 		return;
+	}
+	if (!props.flags) {
+		if (!cellClicked.flag) return;
 	}
 	cellClicked.flag = !cellClicked.flag;
 	const nbFlagToAdd = cellClicked.flag ? -1 : 1;

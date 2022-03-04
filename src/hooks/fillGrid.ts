@@ -51,8 +51,6 @@ export function useFillGrid(
 		let okToPutABomb = false;
 
 		while (!okToPutABomb) {
-			console.log("dans while");
-
 			okToPutABomb = true;
 			cellsWithoutBomb.map((cellPos) => {
 				if (cellPos.row === randomRow && cellPos.col === randomCol) {
@@ -68,10 +66,6 @@ export function useFillGrid(
 			}
 		}
 
-		// if a bomb is already there => random once more
-		// if (grid[randomRow][randomCol].value === 10) {
-		// 	i--;
-		// }
 		grid[randomRow][randomCol].value = 10;
 	}
 
